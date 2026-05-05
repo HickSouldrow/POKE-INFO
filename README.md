@@ -1,2 +1,6 @@
-# POKE-INFO
-Wanna find your favorite Pokémon? Search it here!
+- npx expo install react-native-svg
+- npx expo install cli
+- npx expo install @react-native-async-storage/async-storage
+- npm run web
+- npm install expo
+- npx expo install typescript @types/react @types/react-native
