@@ -68,6 +68,25 @@ export const Theme = {
       fontSize: 12,
       fontWeight: 'bold',
       textTransform: 'uppercase',
-    }
+    },
+    // No seu arquivo de estilo do Input:
+input: {
+    backgroundColor: '#FFFFFF', // Fundo branco solicitado
+    width: '100%',
+    height: 56,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    color: '#1C1917',
+    borderWidth: 2,
+    borderColor: 'rgba(214, 60, 60, 0.2)',
+    
+  
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+}
   })
 } as const;

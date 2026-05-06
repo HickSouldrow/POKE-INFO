@@ -2,8 +2,6 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Button } from '../../components/button';
 import { List } from '../../components/list';
 import { useAuth } from '../../context/AuthContext';
-
-// Importando nossa const unificada (supondo que esteja em um arquivo Theme.ts)
 import { Theme } from '../../styles/theme'; 
 
 export default function Dashboard() {

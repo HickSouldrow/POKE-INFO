@@ -1,20 +1,18 @@
-import { use, useState } from 'react';
+import { useState } from 'react';
 import { router } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
+import Logo from '../../../assets/images/logo.png';
 
-//import Logo from '../..assets/images/cat-icon.svg';
-
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import { Button } from '../../components/button';
 import { Input } from '../../components/input';
 import { Card } from '../../components/card';
-import { Alert } from '../../components/alert';   
-import { Icon } from '../../components/icon';
+import { Alert } from '../../components/alert'; 
+import { Theme } from '../../styles/theme'; // Importando o tema
 
 export default function Index() {
     const [name, setName] = useState<string>('');
     const [senha, setSenha] = useState<string>('');
-
     const [isAlertVisible, setIsAlertVisible] = useState(false);
     const [alertData, setAlertData] = useState({ 
         title: '', 
@@ -24,18 +22,18 @@ export default function Index() {
 
     const { signIn } = useAuth();
 
-    function validateCredentials() {
-        if(name === 'Hick' && senha === '123') {
-            signIn(name);
-
+    async function validateCredentials() {
+        // Usando a "nossa senha" admin/123456 do AuthContext
+        try {
+            await signIn(name);
             router.push({
                 pathname: '/dashboard',
                 params: { username: name } 
             });
-        } else {
+        } catch {
             setAlertData({
-                title: 'Erro de Login',
-                message: 'Credenciais inválidas. Tente novamente.',
+                title: 'Acesso Negado',
+                message: 'Treinador não encontrado ou senha incorreta.',
                 type: 'error',
             });
             setIsAlertVisible(true);
@@ -43,45 +41,51 @@ export default function Index() {
     }
 
     return (
-        <View style={styles.container}>
-            <Card>
-                {/* <Icon name={Logo} size={200} /> */}
-                <Input 
-                    placeholder="Usuario" 
-                    onChangeText={setName} />
-                <Input 
-                    placeholder="Senha" 
-                    secureTextEntry 
-                    onChangeText={setSenha} />
-                <Button 
-                    title="Enviar" 
-                    onPress={validateCredentials} 
-                    style={{ marginTop: 20 }}/>
-            </Card>
+        <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={Theme.styles.container}
+        >
+            <View style={{ flex: 1, justifyContent: 'center', padding: 20 }}>
+                <Card>
+                    <Image 
+                        source={Logo} 
+                        style={{ width: 280, height: 100, alignSelf: 'center', marginBottom: 20 }} 
+                        resizeMode="contain"
+                    />
+                    
+                    <Text style={[Theme.styles.pokemonName, { fontSize: 16, textAlign: 'center', marginBottom: 20 }]}>
+                        Painel de Controle
+                    </Text>
+
+                    <View style={{ gap: 16 }}>
+                        <Input 
+                            placeholder="Usuário" 
+                            placeholderTextColor="#A8A29E"
+                            onChangeText={setName}
+                            autoCapitalize="none"
+                        />
+                        <Input 
+                            placeholder="Senha" 
+                            placeholderTextColor="#A8A29E"
+                            secureTextEntry 
+                            onChangeText={setSenha} />
+                        
+                        <Button 
+                            title="Entrar no Sistema" 
+                            onPress={validateCredentials} 
+                            style={{ marginTop: 10 }}
+                        />
+                    </View>
+                </Card>
+            </View>
 
             <Alert 
                 title={alertData.title}
                 message={alertData.message}
                 type={alertData.type}
                 visible={isAlertVisible}
-                onClose={() => setIsAlertVisible(false)}/>
-        </View>
-    )
+                onClose={() => setIsAlertVisible(false)}
+            />
+        </KeyboardAvoidingView>
+    );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        backgroundColor: '#838181',
-        flex: 1,
-        padding: 32,
-        justifyContent: 'center',
-        gap: 16,
-    },
-    title: {
-        color: '#333',
-        borderColor: '#FF0000',
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 26,
-    },
-});

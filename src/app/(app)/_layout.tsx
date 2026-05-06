@@ -2,7 +2,6 @@ import { Stack, Redirect } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 
 import { useAuth } from "../../context/AuthContext";
-// Importando o Theme que criamos
 import { Theme } from "../../styles/theme"; 
 
 export default function AppLayout() {
@@ -10,7 +9,6 @@ export default function AppLayout() {
 
     if (isLoading) {
         return (
-            /* Aplicando o container Stone-900 e centralizando o loading */
             <View style={[
                 Theme.styles.container, 
                 { justifyContent: "center", alignItems: "center" }
