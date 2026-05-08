@@ -30,7 +30,7 @@ const AlertWeb: React.FC<AlertProps> = ({
         }
     }, [visible, fadeAnim, onClose, autoCloseDuration]);
 
-    // CORREÇÃO DA TIPAGEM AQUI:
+
     const alertColors = {
       info: { border: '#007bff', text: '#007bff' },
       success: { border: '#28a745', text: '#28a745' },
@@ -83,7 +83,7 @@ const AlertWeb: React.FC<AlertProps> = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)', // Overlay mais escuro para combinar com o stone-900
+    backgroundColor: 'rgba(0, 0, 0, 0.7)', 
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,

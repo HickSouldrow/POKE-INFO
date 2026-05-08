@@ -12,8 +12,6 @@ export const styles = StyleSheet.create({
         
         borderWidth: 2,
         borderColor: Theme.colors.primaryRed,
-
-        // Efeito de brilho (Glow) para o botão parecer um painel iluminado
         shadowColor: Theme.colors.primaryRed,
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.4,
