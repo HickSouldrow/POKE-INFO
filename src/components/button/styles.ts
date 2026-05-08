@@ -18,6 +18,10 @@ export const styles = StyleSheet.create({
         shadowRadius: 8,
         elevation: 6, 
     },
+    buttonWeb: {
+        // @ts-ignore - cursor é propriedade exclusiva de web
+        cursor: 'pointer',
+    },
     title: {
         color: Theme.colors.white,
         fontSize: 14,
