@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { View, Text, TouchableOpacity, Modal, Animated, Platform, StyleSheet } from 'react-native';
 import { AlertProps } from "./types";
 
-import { Theme } from '../../styles/theme';
+import { Theme } from '../../constants/theme';
 
 const AlertWeb: React.FC<AlertProps> = ({ 
   title, 

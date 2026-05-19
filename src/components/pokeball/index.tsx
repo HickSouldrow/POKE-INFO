@@ -1,6 +1,7 @@
 import * as React from "react"
 import Svg, { Path, Circle, G } from "react-native-svg"
-import { Theme } from "../../styles/theme";
+// Importamos o Colors diretamente do seu arquivo de tema
+import { Colors } from '@/constants/theme';
 
 export function Pokeball({ size }: { size: number }) {
   return (
@@ -10,7 +11,7 @@ export function Pokeball({ size }: { size: number }) {
 
         <Path
           d="M2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12H2Z"
-          fill={Theme.primaryRed}
+          fill={Colors.primaryRed}
         />
 
         <Circle cx="12" cy="12" r="10" stroke={Colors.black} strokeWidth="2" />

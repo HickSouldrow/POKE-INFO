@@ -1,5 +1,4 @@
 import {StyleSheet} from 'react-native';
-import { Theme } from '../../styles/theme';
 
 export const styles = StyleSheet.create({
     input: {
@@ -11,9 +10,5 @@ export const styles = StyleSheet.create({
         color: '#e3e3e7',
         padding: 12,
         fontSize: 16,
-    },
-    inputWeb: {
-        // @ts-ignore - outlineStyle é propriedade exclusiva de web
-        outlineStyle: 'none',
     }
 })

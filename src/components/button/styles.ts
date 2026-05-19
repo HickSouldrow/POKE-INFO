@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { Theme } from '../../styles/theme'; 
+import { Theme } from '../../constants/theme'; 
 
 export const styles = StyleSheet.create({
     button: {
@@ -17,10 +17,6 @@ export const styles = StyleSheet.create({
         shadowOpacity: 0.4,
         shadowRadius: 8,
         elevation: 6, 
-    },
-    buttonWeb: {
-        // @ts-ignore - cursor é propriedade exclusiva de web
-        cursor: 'pointer',
     },
     title: {
         color: Theme.colors.white,

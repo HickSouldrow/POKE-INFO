@@ -8,7 +8,7 @@ import { Button } from '../../components/button';
 import { Input } from '../../components/input';
 import { Card } from '../../components/card';
 import { Alert } from '../../components/alert'; 
-import { Theme } from '../../styles/theme'; 
+import { Theme } from '../../constants/theme'; 
 
 export default function Index() {
     const [name, setName] = useState<string>('');

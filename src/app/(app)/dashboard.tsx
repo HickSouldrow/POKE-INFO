@@ -1,128 +1,202 @@
-import { View, Text, Image } from 'react-native';
-import { Button } from '../../components/button';
-import { List } from '../../components/list';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, useWindowDimensions, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
-import { Theme } from '../../styles/theme';
+import { PokeballLoading } from '@/components/pokeball-loading';
+import { getPokemons } from '@/integration/pokemonIntegration';
+import { Pokemon, Poder } from '@/@types/pokemon';
+import { TYPE_MAP, TYPE_ICONS, Colors, getColor } from '@/constants/pokemonTypes';
+import { styles } from '../(app)/dashboard.styles';
+
+const STAT_ABBR: Record<string, string> = {
+    hp: 'HP', attack: 'ATK', defense: 'DEF',
+    'special-attack': 'SP.A', 'special-defense': 'SP.D', speed: 'SPD',
+};
+
+const mapType = (t: string) => TYPE_MAP[t] ?? 'normal';
+const CARD_GAP = 12;
+const GRID_H_PAD = 16;
+const MY_TEAM_SIZE = 3;     
+const POKEDEX_SIZE = 10;    
 
 export default function Dashboard() {
     const { user, signOut } = useAuth();
+    const { width } = useWindowDimensions();
+    const [loading, setLoading] = useState(true);
+    const [myTeam, setMyTeam] = useState<Pokemon[]>([]);
+    const [randomPokemons, setRandomPokemons] = useState<Pokemon[]>([]);
 
-    const pokemonData = [
-        { id: '260', name: 'Swampert', types: ['water', 'ground'], description: 'Nº 0260 - Possui força suficiente para arrastar uma pedra de mais de uma tonelada.' },
-        { id: '282', name: 'Gardevoir', types: ['psychic', 'fairy'], description: 'Nº 0282 - Tem a capacidade de prever o futuro e protege seu treinador com a própria vida.' },
-        { id: '286', name: 'Breloom', types: ['grass', 'fighting'], description: 'Nº 0286 - Espalha esporos venenosos e ataca com socos rápidos que são invisíveis.' },
-        { id: '310', name: 'Manectric', types: ['electric'], description: 'Nº 0310 - Cria nuvens de trovoada acima de sua cabeça e descarrega eletricidade.' },
-        { id: '330', name: 'Flygon', types: ['ground', 'dragon'], description: 'Nº 0330 - Conhecido como o "Espírito do Deserto", sua batida de asas soa como música.' },
-        { id: '306', name: 'Aggron', types: ['steel', 'rock'], description: 'Nº 0306 - Reivindica uma montanha inteira como seu território e a protege ferozmente.' },
-    ];
+    const cardWidth = Math.floor((width - GRID_H_PAD * 2 - CARD_GAP) / 2);
 
-    const pokemonImages: { [key: string]: any } = {
-        '260': require('../../../assets/images/260.png'),
-        '282': require('../../../assets/images/282.png'),
-        '286': require('../../../assets/images/286.png'),
-        '310': require('../../../assets/images/310.png'),
-        '330': require('../../../assets/images/330.png'),
-        '306': require('../../../assets/images/306.png'),
-    };
+    useEffect(() => {
+        let isMounted = true;
+        
+        async function load() {
+            try {
+                const all = await getPokemons(151);
+                
+                if (isMounted) {
+                    const shuffled = [...all].sort(() => Math.random() - 0.5);
+                    setMyTeam(shuffled.slice(0, MY_TEAM_SIZE));
+                    setRandomPokemons(shuffled.slice(MY_TEAM_SIZE, MY_TEAM_SIZE + POKEDEX_SIZE));
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        }
+        
+        load();
+        
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     return (
-        <View style={Theme.styles.container}>
-            <View style={{ marginBottom: 24, marginTop: 20 }}>
-                <Text style={[Theme.styles.pokemonName, { fontSize: 14, color: Theme.colors.textSecondary }]}>
-                    Treinador logado
-                </Text>
-                <Text style={[Theme.styles.pokemonName, { color: Theme.colors.white, fontSize: 20 }]}>
-                    {user || 'Ash Ketchum'}
-                </Text>
-                
-                <View style={Theme.styles.divider} />
-
-                <Button 
-                    title="Sair da Pokedéx" 
-                    onPress={signOut} 
-                    style={{ 
-                        borderColor: Theme.colors.primaryRed,
-                        borderWidth: 1,
-                        marginTop: 8,
-                        height: 40
-                    }} 
-                />
+        <View style={styles.wrapper}>
+            {/* Header / Navbarzinha */}
+            <View style={styles.profileHeader}>
+                <View style={styles.userInfo}>
+                    <View style={styles.avatarPlaceholder}>
+                        <Text style={styles.avatarText}>{(user || 'A')[0].toUpperCase()}</Text>
+                    </View>
+                    <View>
+                        <Text style={styles.profileSub}>Treinador</Text>
+                        <Text style={styles.profileName}>{user || 'Ash Ketchum'}</Text>
+                    </View>
+                </View>
+                <TouchableOpacity style={styles.logoutButton} onPress={signOut} activeOpacity={0.7}>
+                    <Text style={styles.logoutText}>Sair</Text>
+                </TouchableOpacity>
             </View>
 
-            <List
-                data={pokemonData}
-                onLoadMore={() => {}}
-                renderItemContent={(item) => {
-                    const primaryType = item.types[0] as keyof typeof Theme.colors.types;
-                    const typeInfo = Theme.colors.types[primaryType] || Theme.colors.types.grass;
+            <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                
+                {/* Seção: Meu Time */}
+                <View style={styles.sectionHeader}>
+                    <View style={styles.sectionAccent} />
+                    <Text style={styles.sectionTitle}>MEU TIME</Text>
+                    <Text style={styles.sectionSubText}>{myTeam.length} ATIVOS</Text>
+                </View>
 
-                    return (
-                        <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 10, position: 'relative' }}>
-                            
-                            <View style={{ position: 'absolute', top: 0, right: 0, flexDirection: 'row', gap: 4, zIndex: 10 }}>
-                                {item.types.map((t: string) => {
-                                    const tInfo = Theme.colors.types[t as keyof typeof Theme.colors.types] || Theme.colors.types.grass;
-                                    return (
-                                        <View key={t} style={[
-                                            Theme.styles.badge, 
-                                            { 
-                                                borderColor: tInfo.color, 
-                                                backgroundColor: tInfo.bg, 
-                                                paddingHorizontal: 8,
-                                                borderWidth: 1.5 
-                                            }
-                                        ]}>
-                                            <Text style={[Theme.styles.badgeText, { color: tInfo.color, fontSize: 9 }]}>
-                                                {t}
-                                            </Text>
-                                        </View>
-                                    );
-                                })}
-                            </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.selectedList}>
+                    {myTeam.map(pokemon => <MyTeamCard key={pokemon.index} pokemon={pokemon} />)}
+                </ScrollView>
 
-                            <View style={{ 
-                                backgroundColor: '#FFFFFF', 
-                                borderRadius: 12, 
-                                padding: 6,
-                                marginRight: 15,
-                                borderWidth: 2,
-                                borderColor: Theme.colors.primaryRed,
-                                shadowColor: typeInfo.color,
-                                shadowOpacity: 0.4,
-                                shadowRadius: 6,
-                                elevation: 5
-                            }}>
-                                <Image 
-                                    source={pokemonImages[item.id]} 
-                                    style={{ width: 100, height: 100 }}
-                                    resizeMode="contain"
-                                />
-                            </View>
+                {/* Seção: Explorar */}
+                <View style={[styles.sectionHeader, styles.sectionHeaderList]}>
+                    <View style={styles.sectionAccent} />
+                    <Text style={styles.sectionTitle}>EXPLORAR</Text>
+                    <Text style={styles.sectionSubText}>{POKEDEX_SIZE} DISPONÍVEIS</Text>
+                </View>
 
-                            <View style={{ flex: 1, justifyContent: 'center' }}>
-                                <Text style={[Theme.styles.pokemonName, { fontSize: 20, marginBottom: 4, marginTop: 8 }]}>
-                                    {item.name}
-                                </Text>
+                <View style={[styles.grid, { paddingHorizontal: GRID_H_PAD, gap: CARD_GAP }]}>
+                    {randomPokemons.map(pokemon => <PokemonGridCard key={pokemon.index} pokemon={pokemon} cardWidth={cardWidth} />)}
+                </View>
 
-                                <Text style={{ color: Theme.colors.textSecondary, fontSize: 13, lineHeight: 18, marginBottom: 10 }} numberOfLines={3}>
-                                    {item.description}
-                                </Text>
+                <View style={styles.bottomSpacer} />
+            </ScrollView>
 
-                                <View style={{ 
-                                    height: 4, 
-                                    backgroundColor: typeInfo.color, 
-                                    width: '100%', 
-                                    borderRadius: 2, 
-                                    shadowColor: typeInfo.color,
-                                    shadowOpacity: 1,
-                                    shadowRadius: 6,
-                                    elevation: 6
-                                }} />
-                            </View>
-                        </View>
-                    );
-                }}
-            />
+            {/* O LOADING AGORA FICA AQUI EMBAIXO COMO OVERLAY ABSOLUTO */}
+            {loading && (
+                <View style={localStyles.overlayFullscreen}>
+                    <PokeballLoading />
+                </View>
+            )}
         </View>
     );
 }
+
+function MyTeamCard({ pokemon }: { pokemon: Pokemon }) {
+    const ptTypes = pokemon.tipos.map(mapType);
+    const colors = getColor(ptTypes);
+    const hp = pokemon.poderes.find(p => p.nome === 'hp')?.forca ?? 0;
+
+    return (
+        <View style={[styles.myTeamCard, { borderColor: colors.accent, shadowColor: Colors.primaryRed }]}>
+            <View style={[styles.shimmerStrip, { backgroundColor: 'rgba(255, 255, 255, 0.25)' }]} />
+            <View style={[styles.innerCard, { backgroundColor: colors.accent + 'D0' }]}>
+                <View style={[styles.topBar, { backgroundColor: 'rgba(0,0,0,0.15)', borderBottomColor: 'rgba(0,0,0,0.2)' }]}>
+                    <Text style={[styles.pokeName, { color: '#FFF' }]} numberOfLines={1}>{pokemon.nome}</Text>
+                    <View style={styles.hpRow}>
+                        <Text style={[styles.hpLabel, { color: 'rgba(255,255,255,0.8)' }]}>HP</Text>
+                        <Text style={[styles.hpValue, { color: '#FFF' }]}>{hp}</Text>
+                    </View>
+                </View>
+                <View style={[styles.imageWrapper, styles.myTeamImageWrapper, { borderColor: 'rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+                    <View style={[styles.cornerTL, { borderColor: '#FFF' }]} />
+                    <View style={[styles.cornerBR, { borderColor: '#FFF' }]} />
+                    <Image source={{ uri: pokemon.imagem }} style={styles.myTeamImage} resizeMode="contain" />
+                </View>
+            </View>
+            <View style={[styles.glowRing, { borderColor: colors.accent }]} />
+        </View>
+    );
+}
+
+function PokemonGridCard({ pokemon, cardWidth }: { pokemon: Pokemon; cardWidth: number }) {
+    const ptTypes = pokemon.tipos.map(mapType);
+    const colors = getColor(ptTypes);
+    const hp = pokemon.poderes.find(p => p.nome === 'hp')?.forca ?? 0;
+
+    return (
+        <View style={[styles.outerFrame, { width: cardWidth, borderColor: colors.accent, shadowColor: colors.accent }]}>
+            <View style={[styles.shimmerStrip, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]} />
+            <View style={[styles.innerCardStatic, { backgroundColor: colors.accent + 'CC' }]}>
+                <View style={[styles.topBar, { backgroundColor: 'rgba(0,0,0,0.12)', borderBottomColor: 'rgba(0,0,0,0.15)' }]}>
+                    <Text style={[styles.pokeName, { color: '#FFF' }]} numberOfLines={1}>{pokemon.nome}</Text>
+                    <View style={styles.hpRow}>
+                        <Text style={[styles.hpLabel, { color: 'rgba(255,255,255,0.7)' }]}>HP</Text>
+                        <Text style={[styles.hpValue, { color: '#FFF' }]}>{hp}</Text>
+                    </View>
+                </View>
+
+                <View style={[styles.imageWrapper, { borderColor: 'rgba(255,255,255,0.3)', backgroundColor: 'rgba(255,255,255,0.25)' }]}>
+                    <View style={[styles.cornerTL, { borderColor: '#FFF' }]} />
+                    <View style={[styles.cornerBR, { borderColor: '#FFF' }]} />
+                    <Image source={{ uri: pokemon.imagem }} style={styles.pokemonImage} resizeMode="contain" />
+                </View>
+
+                <View style={[styles.footerRow, { borderTopColor: 'rgba(0,0,0,0.1)' }]}>
+                    <View style={styles.typesRow}>
+                        {ptTypes.map(t => (
+                            <View key={t} style={[styles.typePill, { backgroundColor: 'rgba(0,0,0,0.2)', borderColor: 'rgba(255,255,255,0.4)' }]}>
+                                <Text style={styles.typeEmoji}>{TYPE_ICONS[t] ?? '⭐'}</Text>
+                                <Text style={[styles.typeLabel, { color: '#FFF' }]}>{t}</Text>
+                            </View>
+                        ))}
+                    </View>
+                    <Text style={[styles.indexNumber, { color: 'rgba(255,255,255,0.9)' }]}>#{pokemon.index}</Text>
+                </View>
+
+                <View style={[styles.statsSection, { borderTopColor: 'rgba(0,0,0,0.1)', backgroundColor: 'rgba(0,0,0,0.15)' }]}>
+                    {pokemon.poderes.map((poder: Poder) => (
+                        <View key={poder.nome} style={styles.statRow}>
+                            <Text style={[styles.statName, { color: 'rgba(255,255,255,0.7)' }]}>
+                                {STAT_ABBR[poder.nome] ?? poder.nome.slice(0, 4).toUpperCase()}
+                            </Text>
+                            <View style={styles.statBarBg}>
+                                <View style={[styles.statBarFill, { width: `${Math.min((poder.forca / 150) * 100, 100)}%`, backgroundColor: '#FFFFFF' }]} />
+                            </View>
+                            <Text style={[styles.statValue, { color: '#FFF' }]}>{poder.forca}</Text>
+                        </View>
+                    ))}
+                </View>
+            </View>
+            <View style={[styles.glowRing, { borderColor: 'rgba(255,255,255,0.3)' }]} />
+        </View>
+    );
+}
+
+const localStyles = StyleSheet.create({
+    overlayFullscreen: {
+        ...StyleSheet.absoluteFillObject,  
+        backgroundColor: Colors.background || '#12100E', 
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 9999, 
+    },
+});

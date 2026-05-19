@@ -22,7 +22,6 @@ npx expo install @react-native-async-storage/async-storage
 # Instalação da CLI e do Core do Expo
 npx expo install cli
 npm install expo
-npm install axios
 
 # Configuração completa do ambiente TypeScript
 npx expo install typescript @types/react @types/react-native

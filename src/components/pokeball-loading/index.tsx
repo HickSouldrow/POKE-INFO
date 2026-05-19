@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
-import { Pokeball } from '../../components/pokeball';
-
+import { Pokeball } from '@/components/pokeball';
+import { Colors } from '@/constants/theme';
 
 const BALL_SIZE = 36;
 const DURATION = 500;
@@ -43,9 +43,12 @@ export function PokeballLoading() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // CORREÇÃO: Garante o preenchimento absoluto em toda a viewport disponível
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: Colors.background,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 999, 
   },
   row: {
     flexDirection: 'row',

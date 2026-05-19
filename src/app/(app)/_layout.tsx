@@ -2,7 +2,7 @@ import { Stack, Redirect } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
 
 import { useAuth } from "../../context/AuthContext";
-import { Theme } from "../../styles/theme"; 
+import { Theme } from "../../constants/theme"; 
 
 export default function AppLayout() {
     const { isAuthenticated, isLoading } = useAuth();
