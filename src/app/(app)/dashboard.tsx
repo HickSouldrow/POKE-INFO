@@ -7,6 +7,10 @@ import { Pokemon, Poder } from '@/@types/pokemon';
 import { TYPE_MAP, TYPE_ICONS, Colors, getColor } from '@/constants/pokemonTypes';
 import { styles } from '../(app)/dashboard.styles';
 
+// IMPORTAÇÕES DOS COMPONENTES
+import { Header } from '@/components/header/header'; 
+import PokedexCompleta from './pokedex';     
+
 const STAT_ABBR: Record<string, string> = {
     hp: 'HP', attack: 'ATK', defense: 'DEF',
     'special-attack': 'SP.A', 'special-defense': 'SP.D', speed: 'SPD',
@@ -24,6 +28,9 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [myTeam, setMyTeam] = useState<Pokemon[]>([]);
     const [randomPokemons, setRandomPokemons] = useState<Pokemon[]>([]);
+    
+    // Estado para controlar a exibição da Pokédex sem precisar de rotas físicas
+    const [verPokedex, setVerPokedex] = useState(false);
 
     const cardWidth = Math.floor((width - GRID_H_PAD * 2 - CARD_GAP) / 2);
 
@@ -55,23 +62,18 @@ export default function Dashboard() {
         };
     }, []);
 
+    if (verPokedex) {
+        return <PokedexCompleta onBack={() => setVerPokedex(false)} />;
+    }
+
     return (
         <View style={styles.wrapper}>
-            {/* Header / Navbarzinha */}
-            <View style={styles.profileHeader}>
-                <View style={styles.userInfo}>
-                    <View style={styles.avatarPlaceholder}>
-                        <Text style={styles.avatarText}>{(user || 'A')[0].toUpperCase()}</Text>
-                    </View>
-                    <View>
-                        <Text style={styles.profileSub}>Treinador</Text>
-                        <Text style={styles.profileName}>{user || 'Ash Ketchum'}</Text>
-                    </View>
-                </View>
-                <TouchableOpacity style={styles.logoutButton} onPress={signOut} activeOpacity={0.7}>
-                    <Text style={styles.logoutText}>Sair</Text>
-                </TouchableOpacity>
-            </View>
+            {/* Header Componentizado */}
+            <Header 
+                user={user} 
+                onSignOut={signOut} 
+                onPokedexPress={() => setVerPokedex(true)} 
+            />
 
             <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 
@@ -100,9 +102,9 @@ export default function Dashboard() {
                 <View style={styles.bottomSpacer} />
             </ScrollView>
 
-            {/* O LOADING AGORA FICA AQUI EMBAIXO COMO OVERLAY ABSOLUTO */}
+            {/* Overlay de carregamento */}
             {loading && (
-                <View style={localStyles.overlayFullscreen}>
+                <View style={styles.overlayFullscreen}>
                     <PokeballLoading />
                 </View>
             )}
@@ -191,12 +193,3 @@ function PokemonGridCard({ pokemon, cardWidth }: { pokemon: Pokemon; cardWidth: 
     );
 }
 
-const localStyles = StyleSheet.create({
-    overlayFullscreen: {
-        ...StyleSheet.absoluteFillObject,  
-        backgroundColor: Colors.background || '#12100E', 
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 9999, 
-    },
-});

@@ -311,4 +311,12 @@ export const styles = StyleSheet.create({
     bottomSpacer: {
         height: 24,
     },
+
+    overlayFullscreen: {
+        ...StyleSheet.absoluteFillObject,  
+        backgroundColor: Colors.background || '#12100E', 
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 9999, 
+    },
 });
