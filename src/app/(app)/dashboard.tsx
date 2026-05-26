@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, useWindowDimensions, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, useWindowDimensions, Image } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { PokeballLoading } from '@/components/pokeball-loading';
 import { getPokemons } from '@/integration/pokemonIntegration';
@@ -9,7 +9,8 @@ import { styles } from '../(app)/dashboard.styles';
 
 // IMPORTAÇÕES DOS COMPONENTES
 import { Header } from '@/components/header/header'; 
-import PokedexCompleta from './pokedex';     
+import PokedexCompleta from './pokedex';    
+import Perfil from './profile'; 
 
 const STAT_ABBR: Record<string, string> = {
     hp: 'HP', attack: 'ATK', defense: 'DEF',
@@ -19,8 +20,8 @@ const STAT_ABBR: Record<string, string> = {
 const mapType = (t: string) => TYPE_MAP[t] ?? 'normal';
 const CARD_GAP = 12;
 const GRID_H_PAD = 16;
-const MY_TEAM_SIZE = 3;     
-const POKEDEX_SIZE = 10;    
+const MY_TEAM_SIZE = 5;     
+const POKEDEX_SIZE = 25;    
 
 export default function Dashboard() {
     const { user, signOut } = useAuth();
@@ -29,10 +30,11 @@ export default function Dashboard() {
     const [myTeam, setMyTeam] = useState<Pokemon[]>([]);
     const [randomPokemons, setRandomPokemons] = useState<Pokemon[]>([]);
     
-    // Estado para controlar a exibição da Pokédex sem precisar de rotas físicas
+    // CORREÇÃO: Estados separados corretamente para controlar a navegação local
     const [verPokedex, setVerPokedex] = useState(false);
+    const [verPerfil, setVerPerfil] = useState(false);
 
-    const cardWidth = Math.floor((width - GRID_H_PAD * 2 - CARD_GAP) / 2);
+    const cardWidth = Math.floor((width - GRID_H_PAD * 4 - CARD_GAP) / 5);
 
     useEffect(() => {
         let isMounted = true;
@@ -62,17 +64,23 @@ export default function Dashboard() {
         };
     }, []);
 
+    // CORREÇÃO: Renderizações condicionais limpas e sem erros de chaves
     if (verPokedex) {
         return <PokedexCompleta onBack={() => setVerPokedex(false)} />;
     }
 
+    if (verPerfil) {
+        return <Perfil onBack={() => setVerPerfil(false)} />;
+    }
+
     return (
         <View style={styles.wrapper}>
-            {/* Header Componentizado */}
+            {/* Header Componentizado - Linkagens injetadas corretamente nas propriedades */}
             <Header 
                 user={user} 
                 onSignOut={signOut} 
                 onPokedexPress={() => setVerPokedex(true)} 
+                onProfilePress={() => setVerPerfil(true)} 
             />
 
             <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -192,4 +200,3 @@ function PokemonGridCard({ pokemon, cardWidth }: { pokemon: Pokemon; cardWidth: 
         </View>
     );
 }
-

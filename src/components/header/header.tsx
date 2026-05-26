@@ -6,10 +6,11 @@ import { styles } from '../../app/(app)/dashboard.styles';
 type HeaderProps = {
     user: string | null;
     onSignOut: () => void;
+    onProfilePress: () => void;
     onPokedexPress: () => void;
 };
 
-export function Header({ user, onSignOut, onPokedexPress }: HeaderProps) {
+export function Header({ user, onSignOut, onPokedexPress, onProfilePress }: HeaderProps) {
     return (
         <View style={styles.profileHeader}>
             <View style={styles.userInfo}>
@@ -27,7 +28,16 @@ export function Header({ user, onSignOut, onPokedexPress }: HeaderProps) {
                     onPress={onPokedexPress} 
                     activeOpacity={0.7}
                 >
-                    <Text style={[styles.logoutText, { color: '#FFF' }]}>Pokédex</Text>
+                <Text style={[styles.logoutText, { color: '#FFF' }]}>Pokédex</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                    style={[styles.logoutButton, { backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: Colors.whiteAlpha?.['30'] || 'rgba(255,255,255,0.3)' }]} 
+                    onPress={onProfilePress} 
+                    activeOpacity={0.7}
+                >
+
+                <Text style={[styles.logoutText, { color: '#FFF' }]}>Perfil</Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity style={styles.logoutButton} onPress={onSignOut} activeOpacity={0.7}>
