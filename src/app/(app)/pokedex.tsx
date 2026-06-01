@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, useWindowDimensions } from 'react-native';
+import { useAuth } from '../../context/AuthContext'; // IMPORTADO: Contexto de autenticação
+import { Header } from '@/components/header/header'; // IMPORTADO: Componente unificado de Header
 import { PokeballLoading } from '@/components/pokeball-loading';
 import { getPokemons } from '@/integration/pokemonIntegration';
 import { Pokemon } from '@/@types/pokemon';
@@ -12,7 +14,8 @@ const GRID_H_PAD = 12;
 
 type GenKey = 'gen1' | 'gen2' | 'gen3';
 
-export default function pokedex({ onBack }: { onBack: () => void }) {
+export default function Pokedex({ onBack }: { onBack: () => void }) {
+    const { user, signOut } = useAuth(); 
     const { width } = useWindowDimensions();
     const [loading, setLoading] = useState(true);
     const [allPokemons, setAllPokemons] = useState<Pokemon[]>([]);
@@ -37,7 +40,6 @@ export default function pokedex({ onBack }: { onBack: () => void }) {
         loadAll();
     }, []);
 
-    // Filtra os pokémons em memória sem precisar fazer novas requisições
     const filteredPokemons = useMemo(() => {
         return allPokemons.filter(pokemon => {
             const index = Number(pokemon.index);
@@ -50,12 +52,29 @@ export default function pokedex({ onBack }: { onBack: () => void }) {
 
     return (
         <View style={styles.container}>
-            {/* Header com botão voltar */}
-            <View style={styles.header}>
+            <Header 
+                user={user} 
+                onSignOut={signOut} 
+                onPokedexPress={() => {}} 
+                onProfilePress={() => {}} 
+            />
+
+            {/* Sub-Header para ação de Voltar e Identificação da Tela */}
+            <View style={{ 
+                flexDirection: 'row', 
+                alignItems: 'center', 
+                paddingHorizontal: GRID_H_PAD, 
+                paddingVertical: 12,
+                backgroundColor: 'rgba(0,0,0,0.02)',
+                borderBottomWidth: 1,
+                borderBottomColor: 'rgba(0,0,0,0.05)'
+            }}>
                 <TouchableOpacity onPress={onBack} style={styles.backButton} activeOpacity={0.7}>
                     <Text style={styles.backButtonText}>◀</Text>
                 </TouchableOpacity>
-                <Text style={styles.title}>POKÉDEX NACIONAL</Text>
+                <Text style={[styles.title, { marginLeft: 12, fontSize: 18, fontWeight: 'bold' }]}>
+                    POKÉDEX NACIONAL
+                </Text>
             </View>
 
             {/* Abas seletores de Gerações */}

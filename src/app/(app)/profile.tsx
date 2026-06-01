@@ -1,29 +1,37 @@
 import React from 'react';
-import { View, Text, StyleSheet, Platform, Image } from 'react-native';
+import { View, Text, StyleSheet, Platform, Image, TouchableOpacity } from 'react-native';
 import { Colors } from '@/constants/theme';
-import { Header } from '@/components/header/header'; // Mantendo o mesmo Header do Dashboard
-import { useAuth } from '../../context/AuthContext'; // Importado para pegar os dados reais se necessário
+import { Header } from '@/components/header/header';
+import { useAuth } from '../../context/AuthContext'; 
 
 const isWeb = Platform.OS === 'web';
 
 const XP_TOTAL = 100;
 const XP_ATUAL = 12;
 
-export default function Perfil() {
-    const { user } = useAuth(); // Caso queira usar o user.nome dinâmico futuramente
+export default function Perfil({ onBack }: { onBack: () => void }) {
+    const { user, signOut } = useAuth(); 
 
     return (
         <View style={styles.wrapper}>
-            {/* Header Componentizado idêntico ao do Dashboard */}
-            <Header />
+            <Header 
+                user={user}
+                onSignOut={signOut}
+                onPokedexPress={() => {}}
+                onProfilePress={() => {}} 
+            />
+
+            <View style={styles.subHeader}>
+                <TouchableOpacity onPress={onBack} style={styles.backButton} activeOpacity={0.7}>
+                    <Text style={styles.backButtonText}>◀</Text>
+                </TouchableOpacity>
+                <Text style={styles.subHeaderTitle}>PERFIL DO TREINADOR</Text>
+            </View>
 
             <View style={styles.content}>
-                {/* Outer Frame: O mesmo container com borda brilhante e efeito glow dos cards do Dashboard */}
                 <View style={styles.outerFrame}>
-                    {/* Linha de efeito Shimmer/Brilho atravessando o card */}
                     <View style={styles.shimmerStrip} />
 
-                    {/* Inner Card: Fundo escuro/semi-transparente tecnológico */}
                     <View style={styles.innerCard}>
                         
                         {/* Top Bar do Card de Perfil */}
@@ -44,7 +52,7 @@ export default function Perfil() {
                         </View>
 
                         {/* Nome e Título */}
-                        <Text style={styles.name}>{user?.name || 'Ash Ketchun'}</Text>
+                        <Text style={styles.name}>{user?.nome || user?.name || 'Ash Ketchum'}</Text>
                         <Text style={styles.role}>Treinador Pokémon</Text>
 
                         {/* Seção de Stats imitando a estrutura de barras de poder do Dashboard */}
@@ -92,6 +100,29 @@ const styles = StyleSheet.create({
     wrapper: {
         flex: 1,
         backgroundColor: Colors.background || '#121214',
+    },
+    /* Estilos do Sub-Header unificado */
+    subHeader: {
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        paddingHorizontal: 16, 
+        paddingVertical: 12,
+        backgroundColor: 'rgba(0,0,0,0.02)',
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(0,0,0,0.05)',
+    },
+    backButton: {
+        padding: 8,
+    },
+    backButtonText: {
+        color: '#FFF',
+        fontSize: 16,
+    },
+    subHeaderTitle: {
+        color: '#FFF',
+        marginLeft: 12, 
+        fontSize: 18, 
+        fontWeight: 'bold',
     },
     content: {
         flex: 1,
