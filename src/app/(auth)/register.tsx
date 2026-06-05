@@ -10,9 +10,11 @@ import { Card } from '../../components/card';
 import { Alert } from '../../components/alert'; 
 import { Theme } from '../../constants/theme'; 
 
-export default function Index() {
+export default function Register() {
     const [name, setName] = useState<string>('');
+    const [email, setEmail] = useState<string>('');
     const [senha, setSenha] = useState<string>('');
+    const [confirmarSenha, setConfirmarSenha] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isAlertVisible, setIsAlertVisible] = useState(false);
     const [alertData, setAlertData] = useState({ 
@@ -21,14 +23,26 @@ export default function Index() {
         type: 'success' as 'success' | 'error' | 'warning' | 'info',
     });
 
-    const { signIn } = useAuth();
+    const { signUp } = useAuth(); // Certifique-se de adicionar o signUp no seu AuthContext
 
-    async function validateCredentials() {
-        if (!name.trim() || !senha.trim()) {
+    async function handleRegister() {
+        // 1. Validação de campos vazios
+        if (!name.trim() || !email.trim() || !senha.trim() || !confirmarSenha.trim()) {
             setAlertData({
                 title: 'Campos Vazios',
-                message: 'Por favor, preencha o usuário e a senha.',
+                message: 'Por favor, preencha todos os campos.',
                 type: 'warning',
+            });
+            setIsAlertVisible(true);
+            return;
+        }
+
+        // 2. Validação se as senhas batem
+        if (senha !== confirmarSenha) {
+            setAlertData({
+                title: 'Senhas Diferentes',
+                message: 'A confirmação de senha não confere.',
+                type: 'error',
             });
             setIsAlertVisible(true);
             return;
@@ -37,16 +51,28 @@ export default function Index() {
         setIsLoading(true);
 
         try {
-            await signIn(name, senha); 
-            
-            router.push({
-                pathname: '/dashboard',
-                params: { username: name } 
+            // Chama a função do contexto que envia os dados para o banco/API
+            if (signUp) {
+                await signUp(name, email, senha);
+            }
+
+            setAlertData({
+                title: 'Conta Criada!',
+                message: 'Sua conta de treinador foi criada com sucesso.',
+                type: 'success',
             });
+            setIsAlertVisible(true);
+
+            // Redireciona para o Login após 2 segundos
+            setTimeout(() => {
+                setIsAlertVisible(false);
+                router.replace('/'); // Altere para a rota correta do seu login se necessário
+            }, 2000);
+
         } catch (error) {
             setAlertData({
-                title: 'Acesso Negado',
-                message: 'Usuário não encontrado ou senha incorreta.',
+                title: 'Erro no Cadastro',
+                message: 'Não foi possível criar a conta. Tente novamente.',
                 type: 'error',
             });
             setIsAlertVisible(true);
@@ -64,21 +90,28 @@ export default function Index() {
                 <Card>
                     <Image 
                         source={Logo} 
-                        style={{ width: 280, height: 100, alignSelf: 'center', marginBottom: 20 }} 
+                        style={{ width: 280, height: 80, alignSelf: 'center', marginBottom: 15 }} 
                         resizeMode="contain"
                     />
                     
-                    <Text style={[Theme.styles.pokemonName, { fontSize: 16, textAlign: 'center', marginBottom: 20 }]}>
-                        Painel de Controle
+                    <Text style={[Theme.styles.pokemonName, { fontSize: 16, textAlign: 'center', marginBottom: 15 }]}>
+                        Criar Conta de Treinador
                     </Text>
 
-                    <View style={{ gap: 16 }}>
+                    <View style={{ gap: 12 }}>
                         <Input 
-                            placeholder="Usuário ou E-mail" 
+                            placeholder="Nome Completo" 
                             placeholderTextColor="#A8A29E"
                             onChangeText={setName}
                             value={name}
+                        />
+                        <Input 
+                            placeholder="E-mail" 
+                            placeholderTextColor="#A8A29E"
+                            onChangeText={setEmail}
+                            value={email}
                             autoCapitalize="none"
+                            keyboardType="email-address"
                         />
                         <Input 
                             placeholder="Senha" 
@@ -87,20 +120,26 @@ export default function Index() {
                             onChangeText={setSenha} 
                             value={senha}
                         />
+                        <Input 
+                            placeholder="Confirmar Senha" 
+                            placeholderTextColor="#A8A29E"
+                            secureTextEntry 
+                            onChangeText={setConfirmarSenha} 
+                            value={confirmarSenha}
+                        />
                         
                         <Button 
-                            title={isLoading ? "" : "Entrar no Sistema"} 
-                            onPress={validateCredentials} 
+                            title={isLoading ? "" : "Cadastrar"} 
+                            onPress={handleRegister} 
                             disabled={isLoading}
                             style={{ marginTop: 10 }}
                         >
                             {isLoading && <ActivityIndicator color="#FFF" />}
                         </Button>
 
-                        {/* LINK PARA A TELA DE CADASTRO */}
-                        <Pressable onPress={() => router.push('/register')} style={{ marginTop: 10 }}>
+                        <Pressable onPress={() => router.push('/')} style={{ marginTop: 10 }}>
                             <Text style={{ color: '#EF4444', textAlign: 'center', fontWeight: 'bold' }}>
-                                Não tem uma conta? Cadastre-se
+                                Já tem uma conta? Faça Login
                             </Text>
                         </Pressable>
                     </View>

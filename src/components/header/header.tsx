@@ -3,23 +3,45 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { Colors } from '@/constants/pokemonTypes';
 import { styles } from '../../app/(app)/dashboard.styles';
 
+// Criamos uma tipagem para a estrutura de objeto do usuário
+type UserObject = {
+    name: string;
+    email: string;
+};
+
 type HeaderProps = {
-    user: string | null;
+    // Agora o user aceita o Objeto Novo, a String Antiga ou Null
+    user: UserObject | string | null;
     onSignOut: () => void;
     onProfilePress: () => void;
     onPokedexPress: () => void;
 };
 
 export function Header({ user, onSignOut, onPokedexPress, onProfilePress }: HeaderProps) {
+    
+    // Tratamento seguro para extrair o nome do treinador
+    const getTrainerName = (): string => {
+        if (!user) return 'Ash Ketchum';
+        if (typeof user === 'object' && 'name' in user) {
+            return user.name;
+        }
+        return String(user); // Caso ainda venha como string simples em algum teste
+    };
+
+    const trainerName = getTrainerName();
+    
+    // Pega a primeira letra de forma 100% segura
+    const primeiraLetra = trainerName && trainerName.length > 0 ? trainerName[0].toUpperCase() : 'A';
+
     return (
         <View style={styles.profileHeader}>
             <View style={styles.userInfo}>
                 <View style={styles.avatarPlaceholder}>
-                    <Text style={styles.avatarText}>{(user || 'A')[0].toUpperCase()}</Text>
+                    <Text style={styles.avatarText}>{primeiraLetra}</Text>
                 </View>
                 <View>
                     <Text style={styles.profileSub}>Treinador</Text>
-                    <Text style={styles.profileName}>{user || 'Ash Ketchum'}</Text>
+                    <Text style={styles.profileName}>{trainerName}</Text>
                 </View>
             </View>
             <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
@@ -28,7 +50,7 @@ export function Header({ user, onSignOut, onPokedexPress, onProfilePress }: Head
                     onPress={onPokedexPress} 
                     activeOpacity={0.7}
                 >
-                <Text style={[styles.logoutText, { color: '#FFF' }]}>Pokédex</Text>
+                    <Text style={[styles.logoutText, { color: '#FFF' }]}>Pokédex</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity 
@@ -36,8 +58,7 @@ export function Header({ user, onSignOut, onPokedexPress, onProfilePress }: Head
                     onPress={onProfilePress} 
                     activeOpacity={0.7}
                 >
-
-                <Text style={[styles.logoutText, { color: '#FFF' }]}>Perfil</Text>
+                    <Text style={[styles.logoutText, { color: '#FFF' }]}>Perfil</Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity style={styles.logoutButton} onPress={onSignOut} activeOpacity={0.7}>
