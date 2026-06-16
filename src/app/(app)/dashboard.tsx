@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, useWindowDimensions, Image, TouchableOpacity, Alert as RNAlert } from 'react-native';
+import { View, Text, ScrollView, useWindowDimensions, Image, TouchableOpacity, Alert as RNAlert, Platform } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { PokeballLoading } from '@/components/pokeball-loading';
-import { getPokemons } from '@/integration/pokemonIntegration';
+import { getPokemons, getRandomPokemon } from '@/integration/pokemonIntegration';
 import { Pokemon, Poder } from '@/@types/pokemon';
 import { TYPE_MAP, TYPE_ICONS, Colors, getColor } from '@/constants/pokemonTypes';
 import { styles } from '../(app)/dashboard.styles';
 
 // IMPORTAÇÕES DOS COMPONENTES
-import { Header } from '@/components/header/header'; 
-import PokedexCompleta from './pokedex';    
-import Perfil from './profile'; 
+import { Header } from '@/components/header/header';
+import PokedexCompleta from './pokedex';
+import Perfil from './profile';
+import NewPokemonReveal from './new_Pokemon';
 
 const STAT_ABBR: Record<string, string> = {
     hp: 'HP', attack: 'ATK', defense: 'DEF',
@@ -30,7 +31,16 @@ export default function Dashboard() {
     const [verPokedex, setVerPokedex] = useState(false);
     const [verPerfil, setVerPerfil] = useState(false);
 
-    const cardWidth = Math.floor((width - GRID_H_PAD * 4 - CARD_GAP) / 5);
+    // Estado do botão de Batalha (geração de Pokémon aleatório via PokéAPI)
+    const [battling, setBattling] = useState(false);
+    const [battlePokemon, setBattlePokemon] = useState<Pokemon | null>(null);
+    const [battleVisible, setBattleVisible] = useState(false);
+    const [battleStatus, setBattleStatus] = useState<string | null>(null);
+
+    // Web tem espaço para 5 cards por linha; no Android/mobile mostramos menos
+    // (2 colunas) para que cada card fique legível em telas estreitas.
+    const columns = Platform.OS === 'web' ? 5 : 2;
+    const cardWidth = Math.floor((width - GRID_H_PAD * 2 - CARD_GAP * (columns - 1)) / columns);
 
     // Mapeamento em tempo real do estado global de dados do usuário
     const myTeam = user?.team || [];
@@ -84,6 +94,31 @@ export default function Dashboard() {
             await removeFromTeam(pokemonIndex);
         } catch (error: any) {
             RNAlert.alert("Gerenciar Time", "Erro ao remover.");
+        }
+    }
+
+    // Botão de Batalha: busca um Pokémon aleatório na PokéAPI, exibe a animação
+    // de captura e tenta adicioná-lo automaticamente ao time do usuário
+    async function handleBattle() {
+        if (battling) return;
+
+        try {
+            setBattling(true);
+            const novoPokemon = await getRandomPokemon();
+            setBattlePokemon(novoPokemon);
+
+            try {
+                await addToTeam(novoPokemon);
+                setBattleStatus('Adicionado ao seu time!');
+            } catch (error: any) {
+                setBattleStatus(error.message || 'Não foi possível adicionar ao time.');
+            }
+
+            setBattleVisible(true);
+        } catch (error) {
+            RNAlert.alert('Batalha', 'Não foi possível encontrar um Pokémon selvagem. Tente novamente.');
+        } finally {
+            setBattling(false);
         }
     }
 
@@ -160,6 +195,23 @@ export default function Dashboard() {
                     <PokeballLoading />
                 </View>
             )}
+
+            <TouchableOpacity
+                style={styles.battleFab}
+                onPress={handleBattle}
+                disabled={battling}
+                activeOpacity={0.85}
+            >
+                <Text style={styles.battleFabIcon}>⚔️</Text>
+                <Text style={styles.battleFabText}>{battling ? 'BUSCANDO...' : 'BATALHAR'}</Text>
+            </TouchableOpacity>
+
+            <NewPokemonReveal
+                visible={battleVisible}
+                pokemon={battlePokemon}
+                statusMessage={battleStatus}
+                onClose={() => setBattleVisible(false)}
+            />
         </View>
     );
 }
@@ -171,7 +223,7 @@ function MyTeamCard({ pokemon, onRemove }: { pokemon: Pokemon; onRemove: () => v
 
     return (
         <View style={[styles.myTeamCard, { borderColor: colors.accent, shadowColor: Colors.primaryRed }]}>
-            <View style={[styles.shimmerStrip, { backgroundColor: 'rgba(255, 255, 255, 0.25)' }]} />
+            <View pointerEvents="none" style={[styles.shimmerStrip, { backgroundColor: 'rgba(255, 255, 255, 0.25)' }]} />
             <View style={[styles.innerCard, { backgroundColor: colors.accent + 'D0' }]}>
                 <View style={[styles.topBar, { backgroundColor: 'rgba(0,0,0,0.15)', borderBottomColor: 'rgba(0,0,0,0.2)' }]}>
                     <Text style={[styles.pokeName, { color: '#FFF' }]} numberOfLines={1}>{pokemon.nome}</Text>
@@ -191,7 +243,7 @@ function MyTeamCard({ pokemon, onRemove }: { pokemon: Pokemon; onRemove: () => v
                     <Text style={{ color: '#FFF', fontSize: 10, fontWeight: 'bold' }}>REMOVER</Text>
                 </TouchableOpacity>
             </View>
-            <View style={[styles.glowRing, { borderColor: colors.accent }]} />
+            <View pointerEvents="none" style={[styles.glowRing, { borderColor: colors.accent }]} />
         </View>
     );
 }
@@ -203,7 +255,7 @@ function PokemonGridCard({ pokemon, cardWidth, isInTeam, onAction }: { pokemon: 
 
     return (
         <View style={[styles.outerFrame, { width: cardWidth, borderColor: colors.accent, shadowColor: colors.accent }]}>
-            <View style={[styles.shimmerStrip, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]} />
+            <View pointerEvents="none" style={[styles.shimmerStrip, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]} />
             <View style={[styles.innerCardStatic, { backgroundColor: colors.accent + 'CC' }]}>
                 <View style={[styles.topBar, { backgroundColor: 'rgba(0,0,0,0.12)', borderBottomColor: 'rgba(0,0,0,0.15)' }]}>
                     <Text style={[styles.pokeName, { color: '#FFF' }]} numberOfLines={1}>{pokemon.nome}</Text>
@@ -259,7 +311,7 @@ function PokemonGridCard({ pokemon, cardWidth, isInTeam, onAction }: { pokemon: 
                     ))}
                 </View>
             </View>
-            <View style={[styles.glowRing, { borderColor: 'rgba(255,255,255,0.3)' }]} />
+            <View pointerEvents="none" style={[styles.glowRing, { borderColor: 'rgba(255,255,255,0.3)' }]} />
         </View>
     );
 }

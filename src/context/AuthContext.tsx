@@ -1,20 +1,26 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Pokemon } from "@/@types/pokemon";
+import { registerUser, loginUser, getApiErrorMessage } from "@/integration/pokemonApi";
 
 type UserCredentials = {
-    name: string;
-    email: string;
+    userId: string;          // UUID retornado pelo backend no login/registro
+    name: string;            // username usado na autenticação
     team: Pokemon[];
     availablePokemons: Pokemon[]; // Nova lista fixa salva por usuário
 };
+
+// Sessão atual (restaurada ao abrir o app).
+const LOGGED_USER_KEY = '@Auth:loggedUser';
+// Dados de jogo (time/explorar) ficam locais, indexados pelo userId do backend.
+const gameDataKey = (userId: string) => `@PokeData:${userId}`;
 
 type AuthContextData = {
     isAuthenticated: boolean;
     user: UserCredentials | null;
     isLoading: boolean;
     signIn: (usernameOrEmail: string, senha: string) => Promise<void>;
-    signUp: (name: string, email: string, senha: string) => Promise<void>;
+    signUp: (name: string, senha: string) => Promise<void>;
     signOut: () => Promise<void>;
     addToTeam: (pokemon: Pokemon) => Promise<void>;
     removeFromTeam: (pokemonIndex: number) => Promise<void>;
@@ -30,7 +36,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         async function loadStorageData() {
-            const storageUser = await AsyncStorage.getItem('@Auth:loggedUser');
+            const storageUser = await AsyncStorage.getItem(LOGGED_USER_KEY);
             if (storageUser) {
                 setUser(JSON.parse(storageUser));
                 setIsAuthenticated(true);
@@ -39,68 +45,53 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
         loadStorageData();
     }, []);
-    
+
     async function updateGlobalUserData(updatedUser: UserCredentials) {
         setUser(updatedUser);
-        await AsyncStorage.setItem('@Auth:loggedUser', JSON.stringify(updatedUser));
+        await AsyncStorage.setItem(LOGGED_USER_KEY, JSON.stringify(updatedUser));
 
-        const storageUsers = await AsyncStorage.getItem('@Auth:registeredUsers');
-        if (storageUsers) {
-            const usersList: any[] = JSON.parse(storageUsers);
-            const updatedList = usersList.map(u => 
-                u.email.toLowerCase() === updatedUser.email.toLowerCase() 
-                    ? { ...u, team: updatedUser.team, availablePokemons: updatedUser.availablePokemons } 
-                    : u
-            );
-            await AsyncStorage.setItem('@Auth:registeredUsers', JSON.stringify(updatedList));
-        }
+        // Persiste os dados de jogo localmente, atrelados ao userId do backend.
+        await AsyncStorage.setItem(
+            gameDataKey(updatedUser.userId),
+            JSON.stringify({
+                team: updatedUser.team,
+                availablePokemons: updatedUser.availablePokemons,
+            })
+        );
     }
 
-    async function signIn(usernameOrEmail: string, responseSenha: string) {
-        const storageUsers = await AsyncStorage.getItem('@Auth:registeredUsers');
-        const usersList: any[] = storageUsers ? JSON.parse(storageUsers) : [];
-
-        const foundUser = usersList.find(
-            (u) => (u.name.toLowerCase() === usernameOrEmail.toLowerCase() || 
-                    u.email.toLowerCase() === usernameOrEmail.toLowerCase()) && 
-                    u.senha === responseSenha
-        );
-
-        if (!foundUser) {
-            throw new Error("Usuário ou senha inválidos.");
+    async function signIn(username: string, senha: string) {
+        let userId: string;
+        try {
+            ({ userId } = await loginUser(username.trim(), senha));
+        } catch (error) {
+            throw new Error(getApiErrorMessage(error, "Usuário ou senha inválidos."));
         }
 
+        // Recupera os dados de jogo salvos localmente para este usuário (se houver).
+        const storedGameData = await AsyncStorage.getItem(gameDataKey(userId));
+        const gameData = storedGameData ? JSON.parse(storedGameData) : {};
+
         const loggedUser: UserCredentials = {
-            name: foundUser.name,
-            email: foundUser.email,
-            team: foundUser.team || [],
-            availablePokemons: foundUser.availablePokemons || [] // Recupera a lista fixa do usuário
+            userId,
+            name: username.trim(),
+            team: gameData.team || [],
+            availablePokemons: gameData.availablePokemons || [],
         };
 
         setUser(loggedUser);
         setIsAuthenticated(true);
-        await AsyncStorage.setItem('@Auth:loggedUser', JSON.stringify(loggedUser));
+        await AsyncStorage.setItem(LOGGED_USER_KEY, JSON.stringify(loggedUser));
     }
 
-    async function signUp(name: string, email: string, senha: string) {
-        const storageUsers = await AsyncStorage.getItem('@Auth:registeredUsers');
-        const usersList: any[] = storageUsers ? JSON.parse(storageUsers) : [];
-
-        const emailExists = usersList.some((u) => u.email.toLowerCase() === email.toLowerCase());
-        if (emailExists) {
-            throw new Error("Este e-mail já está cadastrado.");
+    async function signUp(name: string, senha: string) {
+        // O backend autentica apenas por username + senha (sem e-mail).
+        try {
+            await registerUser(name.trim(), senha);
+        } catch (error) {
+            throw new Error(getApiErrorMessage(error, "Não foi possível criar a conta."));
         }
-
-        const newUser = {
-            name,
-            email,
-            senha,
-            team: [],
-            availablePokemons: [] // Começa vazio, o Dashboard irá popular na primeira abertura
-        };
-
-        usersList.push(newUser);
-        await AsyncStorage.setItem('@Auth:registeredUsers', JSON.stringify(usersList));
+        // Os dados de jogo são criados localmente no primeiro login.
     }
 
     // Define de forma definitiva a lista de exploração gerada na criação da conta
@@ -133,7 +124,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     async function signOut() {
         setUser(null);
         setIsAuthenticated(false);
-        await AsyncStorage.removeItem('@Auth:loggedUser');
+        await AsyncStorage.removeItem(LOGGED_USER_KEY);
     }
 
     return (

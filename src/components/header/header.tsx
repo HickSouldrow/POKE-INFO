@@ -6,7 +6,7 @@ import { styles } from '../../app/(app)/dashboard.styles';
 // Criamos uma tipagem para a estrutura de objeto do usuário
 type UserObject = {
     name: string;
-    email: string;
+    email?: string;
 };
 
 type HeaderProps = {

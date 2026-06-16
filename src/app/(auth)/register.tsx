@@ -12,7 +12,6 @@ import { Theme } from '../../constants/theme';
 
 export default function Register() {
     const [name, setName] = useState<string>('');
-    const [email, setEmail] = useState<string>('');
     const [senha, setSenha] = useState<string>('');
     const [confirmarSenha, setConfirmarSenha] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -27,7 +26,7 @@ export default function Register() {
 
     async function handleRegister() {
         // 1. Validação de campos vazios
-        if (!name.trim() || !email.trim() || !senha.trim() || !confirmarSenha.trim()) {
+        if (!name.trim() || !senha.trim() || !confirmarSenha.trim()) {
             setAlertData({
                 title: 'Campos Vazios',
                 message: 'Por favor, preencha todos os campos.',
@@ -51,9 +50,9 @@ export default function Register() {
         setIsLoading(true);
 
         try {
-            // Chama a função do contexto que envia os dados para o banco/API
+            // Chama a função do contexto que envia os dados para a API
             if (signUp) {
-                await signUp(name, email, senha);
+                await signUp(name, senha);
             }
 
             setAlertData({
@@ -69,10 +68,10 @@ export default function Register() {
                 router.replace('/'); // Altere para a rota correta do seu login se necessário
             }, 2000);
 
-        } catch (error) {
+        } catch (error: any) {
             setAlertData({
                 title: 'Erro no Cadastro',
-                message: 'Não foi possível criar a conta. Tente novamente.',
+                message: error?.message || 'Não foi possível criar a conta. Tente novamente.',
                 type: 'error',
             });
             setIsAlertVisible(true);
@@ -99,22 +98,15 @@ export default function Register() {
                     </Text>
 
                     <View style={{ gap: 12 }}>
-                        <Input 
-                            placeholder="Nome Completo" 
+                        <Input
+                            placeholder="Nome de Usuário"
                             placeholderTextColor="#A8A29E"
                             onChangeText={setName}
                             value={name}
-                        />
-                        <Input 
-                            placeholder="E-mail" 
-                            placeholderTextColor="#A8A29E"
-                            onChangeText={setEmail}
-                            value={email}
                             autoCapitalize="none"
-                            keyboardType="email-address"
                         />
-                        <Input 
-                            placeholder="Senha" 
+                        <Input
+                            placeholder="Senha"
                             placeholderTextColor="#A8A29E"
                             secureTextEntry 
                             onChangeText={setSenha} 

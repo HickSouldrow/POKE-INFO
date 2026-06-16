@@ -43,10 +43,10 @@ export default function Index() {
                 pathname: '/dashboard',
                 params: { username: name } 
             });
-        } catch (error) {
+        } catch (error: any) {
             setAlertData({
                 title: 'Acesso Negado',
-                message: 'Usuário não encontrado ou senha incorreta.',
+                message: error?.message || 'Usuário não encontrado ou senha incorreta.',
                 type: 'error',
             });
             setIsAlertVisible(true);

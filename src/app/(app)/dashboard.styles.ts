@@ -313,10 +313,37 @@ export const styles = StyleSheet.create({
     },
 
     overlayFullscreen: {
-        ...StyleSheet.absoluteFillObject,  
-        backgroundColor: Colors.background || '#12100E', 
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: Colors.background || '#12100E',
         justifyContent: 'center',
         alignItems: 'center',
-        zIndex: 9999, 
+        zIndex: 9999,
+    },
+
+    battleFab: {
+        position: 'absolute',
+        right: 20,
+        bottom: 24,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        backgroundColor: Colors.primaryRed,
+        paddingHorizontal: 20,
+        paddingVertical: 14,
+        borderRadius: 30,
+        borderWidth: 2,
+        borderColor: 'rgba(255,255,255,0.25)',
+        ...(Platform.OS !== 'web'
+            ? { shadowColor: Colors.primaryRed, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.5, shadowRadius: 8, elevation: 8 }
+            : { boxShadow: '0 4px 15px rgba(225, 29, 72, 0.5)' } as any),
+    },
+    battleFabIcon: {
+        fontSize: 16,
+    },
+    battleFabText: {
+        color: '#FFF',
+        fontWeight: '900',
+        fontSize: 13,
+        letterSpacing: 1.5,
     },
 });
