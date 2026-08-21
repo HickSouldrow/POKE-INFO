@@ -52,7 +52,7 @@ export default function Perfil({ onBack }: { onBack: () => void }) {
                         </View>
 
                         {/* Nome e Título */}
-                        <Text style={styles.name}>{user?.nome || user?.name || 'Ash Ketchum'}</Text>
+                        <Text style={styles.name}>{user?.name || 'Ash Ketchum'}</Text>
                         <Text style={styles.role}>Treinador Pokémon</Text>
 
                         {/* Seção de Stats imitando a estrutura de barras de poder do Dashboard */}
@@ -69,20 +69,20 @@ export default function Perfil({ onBack }: { onBack: () => void }) {
 
                             {/* Vitórias */}
                             <View style={styles.statRow}>
-                                <Text style={[styles.statName, { color: Colors.game?.win || '#4CAF50' }]}>🏆 VIT</Text>
+                                <Text style={[styles.statName, { color: '#4CAF50' }]}>🏆 VIT</Text>
                                 <View style={styles.statBarBg}>
-                                    <View style={[styles.statBarFill, { width: '80%', backgroundColor: Colors.game?.win || '#4CAF50' }]} />
+                                    <View style={[styles.statBarFill, { width: '80%', backgroundColor: '#4CAF50' }]} />
                                 </View>
-                                <Text style={[styles.statValue, { color: Colors.game?.win || '#4CAF50' }]}>8/10</Text>
+                                <Text style={[styles.statValue, { color: '#4CAF50' }]}>8/10</Text>
                             </View>
 
                             {/* Derrotas */}
                             <View style={styles.statRow}>
-                                <Text style={[styles.statName, { color: Colors.game?.loss || '#F44336' }]}>💀 DER</Text>
+                                <Text style={[styles.statName, { color: '#F44336' }]}>💀 DER</Text>
                                 <View style={styles.statBarBg}>
-                                    <View style={[styles.statBarFill, { width: '20%', backgroundColor: Colors.game?.loss || '#F44336' }]} />
+                                    <View style={[styles.statBarFill, { width: '20%', backgroundColor: '#F44336' }]} />
                                 </View>
-                                <Text style={[styles.statValue, { color: Colors.game?.loss || '#F44336' }]}>2/10</Text>
+                                <Text style={[styles.statValue, { color: '#F44336' }]}>2/10</Text>
                             </View>
 
                         </View>

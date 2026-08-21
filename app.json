@@ -27,10 +27,14 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "apiUrl": "https://lnh1dhp1mj.execute-api.us-east-1.amazonaws.com/api-pokemon"
     }
   }
 }

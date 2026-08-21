@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Colors } from '@/constants/pokemonTypes';
+import { useAuth } from '@/context/AuthContext';
 import { styles } from '../../app/(app)/dashboard.styles';
 
 // Criamos uma tipagem para a estrutura de objeto do usuário
@@ -17,8 +18,21 @@ type HeaderProps = {
     onPokedexPress: () => void;
 };
 
+/** Segundos -> "mm:ss" (ou "hh:mm" quando ainda falta mais de uma hora). */
+function formatRemaining(totalSeconds: number): string {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const pad = (value: number) => String(value).padStart(2, '0');
+    return hours > 0 ? `${pad(hours)}:${pad(minutes)}` : `${pad(minutes)}:${pad(seconds)}`;
+}
+
 export function Header({ user, onSignOut, onPokedexPress, onProfilePress }: HeaderProps) {
-    
+    const { sessionExpiresIn, isSecureChannelActive } = useAuth();
+
+    // Menos de 5 minutos para a sessão cair: destaca o contador em vermelho.
+    const isExpiringSoon = sessionExpiresIn > 0 && sessionExpiresIn <= 300;
+
     // Tratamento seguro para extrair o nome do treinador
     const getTrainerName = (): string => {
         if (!user) return 'Ash Ketchum';
@@ -42,6 +56,19 @@ export function Header({ user, onSignOut, onPokedexPress, onProfilePress }: Head
                 <View>
                     <Text style={styles.profileSub}>Treinador</Text>
                     <Text style={styles.profileName}>{trainerName}</Text>
+                    {sessionExpiresIn > 0 && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                            <Text
+                                style={{
+                                    fontSize: 10,
+                                    fontWeight: '700',
+                                    color: isExpiringSoon ? '#FCA5A5' : 'rgba(255,255,255,0.55)',
+                                }}
+                            >
+                                {isSecureChannelActive ? '🔒' : '🔑'} sessão {formatRemaining(sessionExpiresIn)}
+                            </Text>
+                        </View>
+                    )}
                 </View>
             </View>
             <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>

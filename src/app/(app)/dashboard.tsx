@@ -89,7 +89,7 @@ export default function Dashboard() {
         }
     }
 
-    async function handleRemoveFromTeam(pokemonIndex: number) {
+    async function handleRemoveFromTeam(pokemonIndex: string) {
         try {
             await removeFromTeam(pokemonIndex);
         } catch (error: any) {
